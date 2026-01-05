@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Happy Birthday Haseeb 🎉</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+body{
+  margin:0;
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:#f6f6f6;
+  font-family:Arial, sans-serif;
+}
+
+.card{
+  background:#fff4ea;
+  border-radius:18px;
+  padding:24px;
+  width:90%;
+  max-width:420px;
+  text-align:center;
+  box-shadow:0 10px 25px rgba(0,0,0,.15);
+  position:relative;
+  z-index:2;
+}
+
+.photo img{
+  width:90px;
+  height:90px;
+  object-fit:cover;
+  border-radius:12px;
+}
+
+.name{
+  font-size:26px;
+  font-weight:bold;
+  margin:10px 0;
+}
+
+.message{
+  font-size:15px;
+  line-height:1.5;
+  margin-bottom:18px;
+}
+
+.candles{
+  display:flex;
+  justify-content:center;
+  gap:10px;
+}
+
+.candle{
+  width:16px;
+  height:60px;
+  background:white;
+  border-radius:6px;
+  position:relative;
+}
+
+.flame{
+  position:absolute;
+  top:-18px;
+  left:50%;
+  transform:translateX(-50%);
+  width:14px;
+  height:18px;
+  background:radial-gradient(circle,#fff7b2,#ff9900);
+  border-radius:50%;
+  animation:flicker .8s infinite;
+}
+
+@keyframes flicker{
+  0%{opacity:1}
+  50%{opacity:.7}
+  100%{opacity:1}
+}
+
+.candle.off .flame{ display:none }
+
+/* START OVERLAY */
+#startScreen{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.75);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  z-index:10;
+}
+
+#startScreen button{
+  padding:14px 22px;
+  font-size:18px;
+  border:none;
+  border-radius:10px;
+  background:#ff4d6d;
+  color:white;
+  cursor:pointer;
+}
+
+/* CONFETTI */
+canvas{
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  z-index:1;
+}
+</style>
+</head>
+
+<body>
+
+<canvas id="confetti"></canvas>
+
+<div id="startScreen">
+  <button onclick="startExperience()">Tap to Start 🎉</button>
+</div>
+
+<div class="card">
+
+  <!-- PHOTO (embedded) -->
+  <div class="photo">
+    <img src="haseeb.jpg" alt="Haseeb">
+
+  </div>
+
+  <div class="name">Haseeb</div>
+
+  <div class="message">
+    Happy Birthday! 🎉 May Allah bless you with a long, happy life!
+    Stay as wise as ustaad G, as fun as putra, and as adorable as pookie,
+    koi hamesha khush rhay, meray sath! 💕  
+    May our friendship always remain this pure and lifelong, Ameen ❤️  
+    <br><br>
+    Have a wonderful birthday 🎉 
+    Your Friend: D3:1253
+  </div>
+
+  <div class="candles" id="candles">
+    <div class="candle"><div class="flame"></div></div>
+    <div class="candle"><div class="flame"></div></div>
+    <div class="candle"><div class="flame"></div></div>
+  </div>
+
+</div>
+
+<audio id="music" loop>
+  <source src="birthday.mp3" type="audio/mpeg">
+</audio>
+
+<script>
+let blown=false;
+
+// START
+function startExperience(){
+  document.getElementById('startScreen').style.display='none';
+  document.getElementById('music').play();
+  confetti();       // 🎉 START CONFETTI
+  startMic();
+}
+
+// MIC BLOW DETECTION
+function startMic(){
+  navigator.mediaDevices.getUserMedia({audio:true}).then(stream=>{
+    const ctx=new AudioContext();
+    const mic=ctx.createMediaStreamSource(stream);
+    const analyser=ctx.createAnalyser();
+    mic.connect(analyser);
+    analyser.fftSize=256;
+    const data=new Uint8Array(analyser.frequencyBinCount);
+
+    function listen(){
+      analyser.getByteFrequencyData(data);
+      const volume=data.reduce((a,b)=>a+b)/data.length;
+      if(volume>40 && !blown){
+        blowCandles();
+        blown=true;
+      }
+      requestAnimationFrame(listen);
+    }
+    listen();
+  });
+}
+
+// BLOW + CONFETTI
+function blowCandles(){
+  document.querySelectorAll('.candle').forEach(c=>c.classList.add('off'));
+  confetti();
+}
+
+// CONFETTI
+function confetti(){
+  const canvas=document.getElementById('confetti');
+  const ctx=canvas.getContext('2d');
+  canvas.width=innerWidth;
+  canvas.height=innerHeight;
+  let pieces=[...Array(150)].map(()=>({
+    x:Math.random()*canvas.width,
+    y:Math.random()*canvas.height,
+    r:Math.random()*6+4,
+    d:Math.random()*10
+  }));
+
+  function draw(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    pieces.forEach(p=>{
+      ctx.beginPath();
+      ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+      ctx.fillStyle=`hsl(${Math.random()*360},100%,60%)`;
+      ctx.fill();
+      p.y+=p.d;
+      if(p.y>canvas.height)p.y=0;
+    });
+    requestAnimationFrame(draw);
+  }
+  draw();
+}
+</script>
+
+</body>
+</html>
